@@ -1,0 +1,37 @@
+/* Catppuccin Macchiato + Mauve — loaded after Bootstrap and upstream style.css */
+:root {
+    --base: #24273a; --mantle: #1e2030; --crust: #181926;
+    --surface0: #363a4f; --surface1: #494d64; --surface2: #5b6078;
+    --text: #cad3f5; --subtext0: #a5adcb; --overlay0: #6e738d;
+    --mauve: #c6a0f6; --red: #ed8796; --green: #a6da95;
+}
+html, body {
+    background: var(--base) !important;
+    color: var(--text) !important;
+    font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif !important;
+}
+header { background: var(--mantle) !important; color: var(--text) !important; border-bottom: 1px solid var(--surface0); }
+header h1 { color: var(--mauve) !important; }
+a { color: var(--mauve); }
+a:hover { color: #f5bde6; }
+.container > p:first-child { display: none; } /* upstream Discord promo line */
+.text-danger { color: var(--red) !important; }
+.input-group-text {
+    background: var(--surface0) !important; color: var(--subtext0) !important;
+    border: 1px solid var(--surface1) !important;
+}
+.form-control {
+    background: var(--mantle) !important; color: var(--text) !important;
+    border: 1px solid var(--surface1) !important;
+    font-family: "IBM Plex Mono", ui-monospace, monospace !important;
+}
+.form-control:focus { border-color: var(--mauve) !important; box-shadow: 0 0 0 .15rem rgba(198,160,246,.25) !important; }
+.form-control::placeholder { color: var(--overlay0) !important; }
+.form-control[readonly] { background: var(--crust) !important; }
+.btn-success, .btn-primary { background: var(--mauve) !important; border-color: var(--mauve) !important; color: var(--crust) !important; font-weight: 600; }
+.btn-success:hover, .btn-primary:hover { background: #f5bde6 !important; border-color: #f5bde6 !important; }
+.btn-secondary, .btn-outline-secondary {
+    background: var(--surface0) !important; border-color: var(--surface1) !important; color: var(--text) !important;
+}
+.btn-secondary:hover, .btn-outline-secondary:hover { background: var(--surface1) !important; }
+label, .form-check-label { color: var(--subtext0); }

@@ -1,0 +1,22 @@
+services:
+  webproxy:
+    image: ghcr.io/mmbesar/webproxy:latest
+    container_name: webproxy
+    restart: unless-stopped
+    environment:
+      RH_PASSWORD: ${RH_PASSWORD:?set RH_PASSWORD in .env}
+      # What the browser uses to reach this container (change if you remap ports):
+      PUBLIC_PORT: 8080
+      PUBLIC_CROSS_PORT: 8081
+      PUBLIC_PROTOCOL: "http:"
+      # TRUST_PROXY: "true"   # enable behind Caddy/nginx
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    volumes:
+      - sessions:/app/sessions
+      - cache-js:/app/cache-js
+
+volumes:
+  sessions:
+  cache-js:
