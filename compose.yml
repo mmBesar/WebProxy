@@ -4,12 +4,15 @@ services:
     container_name: webproxy
     restart: unless-stopped
     environment:
-      RH_PASSWORD: ${RH_PASSWORD:?set RH_PASSWORD in .env}
-      # What the browser uses to reach this container (change if you remap ports):
+      # Home-network mode: no password, no session screens.
+      RH_ALLOW_OPEN: "true"
+      # Or use a password instead (remove RH_ALLOW_OPEN):
+      # RH_PASSWORD: change-me
+      # Ports the BROWSER uses (must equal the host side of "ports:" below):
       PUBLIC_PORT: 8080
       PUBLIC_CROSS_PORT: 8081
       PUBLIC_PROTOCOL: "http:"
-      # TRUST_PROXY: "true"   # enable behind Caddy/nginx
+      # LOG_LEVEL: traffic   # only for debugging; logs every proxied URL
     ports:
       - "8080:8080"
       - "8081:8081"

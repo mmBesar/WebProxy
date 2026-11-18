@@ -18,10 +18,8 @@ RUN git init -q . \
 
 RUN npm install --no-audit --no-fund && npm run build
 
-# Catppuccin Macchiato theme (appended last so it wins over Bootstrap/upstream CSS)
-COPY theme.css public/theme.css
-RUN sed -i 's#</head>#    <link rel="stylesheet" href="theme.css">\n</head>#' public/index.html \
-    && grep -q 'theme.css' public/index.html
+# Simple landing page (Catppuccin Macchiato) replaces the upstream session UI
+COPY index.html public/index.html
 
 # ---------------------------------------------------------------------------
 FROM node:22-bookworm-slim
