@@ -12,7 +12,9 @@ services:
       PUBLIC_PORT: 8080
       PUBLIC_CROSS_PORT: 8081
       PUBLIC_PROTOCOL: "http:"
-      # LOG_LEVEL: traffic   # only for debugging; logs every proxied URL
+      # Debugging only (remove afterwards):
+      # LOG_LEVEL: traffic    # logs every proxied URL
+      # LOG_STATUS: "true"    # logs status / cut-off / bytes for YouTube video traffic
     ports:
       - "8080:8080"
       - "8081:8081"
