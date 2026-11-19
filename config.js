@@ -18,7 +18,9 @@ if (!password && !bool(env.RH_ALLOW_OPEN)) {
 // Ports the BROWSER uses to reach the proxy (what you map on the host / reverse proxy).
 const publicPort = Number(env.PUBLIC_PORT || 8080);
 const publicCrossPort = Number(env.PUBLIC_CROSS_PORT || 8081);
-const publicProtocol = env.PUBLIC_PROTOCOL || 'http:'; // use 'https:' behind a TLS reverse proxy
+const tlsOn = bool(env.TLS_ENABLED);
+const tlsDir = env.TLS_DIR || '/certs';
+const publicProtocol = env.PUBLIC_PROTOCOL || (tlsOn ? 'https:' : 'http:'); // 'https:' also when behind a TLS reverse proxy
 
 module.exports = {
     bindingAddress: '0.0.0.0',
@@ -32,6 +34,11 @@ module.exports = {
         crossDomainPort: publicCrossPort,
         protocol: publicProtocol,
     }),
+
+    // Built-in HTTPS (both the main and the cross-domain port). Certificates come from gen-cert.sh.
+    ssl: tlsOn
+        ? { key: require('fs').readFileSync(tlsDir + '/tls.key'), cert: require('fs').readFileSync(tlsDir + '/tls.crt') }
+        : null,
 
     password,
     restrictSessionToIP: !bool(env.RH_DISABLE_IP_LOCK),

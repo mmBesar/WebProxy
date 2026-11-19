@@ -11,17 +11,26 @@ services:
       # Ports the BROWSER uses (must equal the host side of "ports:" below):
       PUBLIC_PORT: 8080
       PUBLIC_CROSS_PORT: 8081
-      PUBLIC_PROTOCOL: "http:"
+      # HTTPS (needed for some sites, e.g. YouTube seeking, to behave): the container makes its own
+      # CA + server certificate. Install ca.crt on your devices once (see README). Covers both ports.
+      # TLS_ENABLED: "true"
+      # TLS_SAN: "192.168.1.50, webproxy.lan"   # every IP/hostname you use to reach this server
+      # Quick-link buttons on the landing page (Name=url, separated by commas or new lines).
+      # Defaults to the four below. Use "" for none. A bare domain gets https://.
+      # QUICK_LINKS: "Google=https://www.google.com, DuckDuckGo=https://duckduckgo.com, YouTube=https://www.youtube.com, Facebook=https://www.facebook.com"
       # Debugging only (remove afterwards):
       # LOG_LEVEL: traffic    # logs every proxied URL
       # LOG_STATUS: "true"    # logs status / cut-off / bytes for YouTube video traffic
+      # LOG_BODY_MAX: "512"   # with LOG_STATUS: also log small response bodies (base64)
     ports:
       - "8080:8080"
       - "8081:8081"
     volumes:
       - sessions:/app/sessions
       - cache-js:/app/cache-js
+      - certs:/certs
 
 volumes:
   sessions:
   cache-js:
+  certs:

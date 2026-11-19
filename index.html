@@ -55,16 +55,15 @@ footer { margin-top:36px; color:var(--overlay0); font-size:.85rem; }
 
     <div class="quick" id="quick"></div>
     <div id="err" role="alert"></div>
-    <footer>Pages are fetched by this server and shown here.</footer>
+    <footer>Pages are fetched by this server and shown here. <span id="ca" style="display:none">&middot; <a href="/ca.crt" download="webproxy-ca.crt">Install certificate</a></span></footer>
 </main>
 
 <script>
 (function () {
     var KEY = 'webproxy_session', PWKEY = 'webproxy_pwd';
-    var SITES = [
-        ['DuckDuckGo', 'https://duckduckgo.com/'], ['Google', 'https://www.google.com/'],
-        ['YouTube', 'https://www.youtube.com/'], ['Wikipedia', 'https://www.wikipedia.org/'],
-        ['Reddit', 'https://www.reddit.com/'], ['Twitch', 'https://www.twitch.tv/']
+    var DEFAULT_SITES = [
+        { name: 'Google', url: 'https://www.google.com/' }, { name: 'DuckDuckGo', url: 'https://duckduckgo.com/' },
+        { name: 'YouTube', url: 'https://www.youtube.com/' }, { name: 'Facebook', url: 'https://www.facebook.com/' }
     ];
     var $ = function (id) { return document.getElementById(id); };
     var needPassword = false;
@@ -129,14 +128,25 @@ footer { margin-top:36px; color:var(--overlay0); font-size:.85rem; }
         }).then(function () { $('go').disabled = false; });
     }
 
-    SITES.forEach(function (s) {
-        var b = document.createElement('button');
-        b.type = 'button'; b.textContent = s[0];
-        b.onclick = function () { go(s[1]); };
-        $('quick').appendChild(b);
-    });
+    function renderSites(list) {
+        $('quick').innerHTML = '';
+        list.forEach(function (s) {
+            var b = document.createElement('button');
+            b.type = 'button'; b.textContent = s.name;
+            b.onclick = function () { go(s.url); };
+            $('quick').appendChild(b);
+        });
+    }
+    renderSites(DEFAULT_SITES);
+    fetch('/sites.json').then(function (r) { return r.ok ? r.json() : null; }).then(function (list) {
+        if (Array.isArray(list)) renderSites(list);
+    }).catch(function () {});
     $('f').onsubmit = function (ev) { ev.preventDefault(); go($('url').value); };
     window.__normalize = normalize;
+
+    if (location.protocol === 'https:') {
+        fetch('/ca.crt').then(function (r) { if (r.ok) $('ca').style.display = 'inline'; }).catch(function () {});
+    }
 
     fetch('/needpassword').then(function (r) { return r.text(); }).then(function (t) {
         needPassword = t === 'true';

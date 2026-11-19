@@ -32,12 +32,36 @@ The container refuses to start unless you pick one:
 | `PUBLIC_PROTOCOL` | `http:` | `https:` behind a TLS reverse proxy |
 | `TRUST_PROXY` | off | Use `X-Forwarded-For` for the client IP (behind Caddy/nginx) |
 | `RH_DISABLE_IP_LOCK` | off | Allow a session to be used from another IP |
+| `QUICK_LINKS` | Google, DuckDuckGo, YouTube, Facebook | Landing-page buttons as `Name=url` pairs separated by commas or new lines (no commas inside a URL). A bare domain gets `https://`; write `http://...` for plain-HTTP sites. `""` hides them |
 | `LOG_LEVEL` | `info` | `disabled`, `debug`, `traffic`, `info`, `warn`, `error` |
 | `LOG_STATUS` | off | Log what the proxy answered the browser (status, `finished` or `CUT-OFF`, bytes, ms) for requests matching `LOG_STATUS_MATCH`, plus every status >= 400. Query strings are not logged |
+| `LOG_BODY_MAX` | off | With `LOG_STATUS`: also log response bodies up to this many bytes as base64 (for decoding tiny error/control responses) |
 | `LOG_STATUS_MATCH` | `googlevideo\|youtubei\|/api/stats` | Regex of request URLs to log |
 
 If you remap ports (e.g. `8118:8080`, `8228:8081`), set `PUBLIC_PORT=8118` and `PUBLIC_CROSS_PORT=8228`.
 With bind mounts instead of named volumes, `chown 1000:1000` the host folders (the container runs as `node`).
+
+## HTTPS (built-in, local CA)
+
+Plain `http://IP` is an insecure context for the browser, which disables some web APIs. For sites that need them, serve the proxy over HTTPS:
+
+```yaml
+environment:
+  TLS_ENABLED: "true"
+  TLS_SAN: "192.168.1.50, webproxy.lan"   # every IP/hostname you type in the browser
+volumes:
+  - certs:/certs
+```
+
+On start the container creates a local CA and a server certificate for `TLS_SAN` (kept in `/certs`). Both ports (main and cross-domain) then speak HTTPS, and `PUBLIC_PROTOCOL` defaults to `https:`. Changing `TLS_SAN` reissues the server certificate and keeps the same CA, so devices don't need to reinstall anything.
+
+**Install the CA once per device** (menu names vary): download `https://SERVER:PORT/ca.crt` (the landing page shows an "Install certificate" link; click through the warning once to get it), or run `docker compose cp webproxy:/certs/ca.crt .`.
+
+- Chromium/Chrome: Settings, Privacy and security, Security, Manage certificates, Authorities, Import.
+- Firefox: Settings, Privacy & Security, View Certificates, Authorities, Import.
+- Android: Settings, Security, Encryption & credentials, Install a certificate, CA certificate.
+
+Keep the `certs` volume private: `ca.key` can mint certificates that every device trusting the CA will accept.
 
 ## Notes
 
