@@ -3,34 +3,35 @@ services:
     image: ghcr.io/mmbesar/webproxy:latest
     container_name: webproxy
     restart: unless-stopped
+    depends_on:
+      - pot-provider
     environment:
       # Home-network mode: no password, no session screens.
       RH_ALLOW_OPEN: "true"
-      # Or use a password instead (remove RH_ALLOW_OPEN):
-      # RH_PASSWORD: change-me
       # Ports the BROWSER uses (must equal the host side of "ports:" below):
       PUBLIC_PORT: 8080
       PUBLIC_CROSS_PORT: 8081
-      # HTTPS (needed for some sites, e.g. YouTube seeking, to behave): the container makes its own
-      # CA + server certificate. Install ca.crt on your devices once (see README). Covers both ports.
-      # TLS_ENABLED: "true"
-      # TLS_SAN: "192.168.1.50, webproxy.lan"   # every IP/hostname you use to reach this server
-      # Quick-link buttons on the landing page (Name=url, separated by commas or new lines).
-      # Defaults to the four below. Use "" for none. A bare domain gets https://.
+      # YouTube fix: mints PO tokens through the pot-provider service below.
+      POT_URL: http://pot-provider:4416
+      # Quick-link buttons on the landing page (Name=url, comma or new-line separated).
       # QUICK_LINKS: "Google=https://www.google.com, DuckDuckGo=https://duckduckgo.com, YouTube=https://www.youtube.com, Facebook=https://www.facebook.com"
-      # Debugging only (remove afterwards):
-      # LOG_LEVEL: traffic    # logs every proxied URL
-      # LOG_STATUS: "true"    # logs status / cut-off / bytes for YouTube video traffic
-      # LOG_BODY_MAX: "512"   # with LOG_STATUS: also log small response bodies (base64)
+      # Debugging only: shows YouTube's verdict per stream request (sps=OK / PENDING / REJECTED)
+      # LOG_STATUS: "true"
+      # LOG_STATUS_MATCH: "googlevideo"
     ports:
       - "8080:8080"
       - "8081:8081"
     volumes:
       - sessions:/app/sessions
       - cache-js:/app/cache-js
-      - certs:/certs
+
+  # Mints the tokens YouTube demands (BotGuard). Never publish its port: it has no authentication.
+  pot-provider:
+    image: brainicism/bgutil-ytdlp-pot-provider:2.0.2
+    container_name: pot-provider
+    restart: unless-stopped
+    init: true
 
 volumes:
   sessions:
   cache-js:
-  certs:

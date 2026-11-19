@@ -5,6 +5,7 @@ const env = process.env;
 const bool = (v) => ['1', 'true', 'yes', 'on'].includes(String(v || '').toLowerCase());
 
 if (bool(env.LOG_STATUS)) require('./status-log.js');
+if (env.POT_URL) require('./pot-inject.js');
 
 const password = env.RH_PASSWORD || null;
 if (!password && !bool(env.RH_ALLOW_OPEN)) {

@@ -37,6 +37,8 @@ The container refuses to start unless you pick one:
 | `LOG_LEVEL` | `info` | `disabled`, `debug`, `traffic`, `info`, `warn`, `error` |
 | `LOG_STATUS` | off | Log what the proxy answered the browser (status, `finished` or `CUT-OFF`, bytes, ms) for requests matching `LOG_STATUS_MATCH`, plus every status >= 400. Query strings are not logged |
 | `LOG_BODY_MAX` | off | With `LOG_STATUS`: also log response bodies up to this many bytes as base64 (for decoding tiny error/control responses) |
+| `POT_URL` | off | Base URL of the pot-provider service (enables the YouTube PO-token fix) |
+| `POT_LOG` | first per session | `all` logs every injection |
 | `LOG_STATUS_MATCH` | `googlevideo\|youtubei\|/api/stats` | Regex of request URLs to log |
 
 If you remap ports (e.g. `8118:8080`, `8228:8081`), set `PUBLIC_PORT=8118` and `PUBLIC_CROSS_PORT=8228`.
@@ -65,6 +67,14 @@ On start the container creates a local CA and a server certificate for `TLS_SAN`
 With built-in TLS the proxy runs as a single process, because Rammerhead's worker load balancer has to read plaintext HTTP to route requests and cannot sit in front of TLS. That is fine for a handful of users. To keep workers, terminate TLS in a reverse proxy instead and leave `TLS_ENABLED` off.
 
 Keep the `certs` volume private: `ca.key` can mint certificates that every device trusting the CA will accept.
+
+## YouTube
+
+YouTube's streaming servers ask the page to prove it is a real browser (a "PO token"). Through any rewriting proxy that proof fails and playback is cut after ~30-45 s (or on the first seek). WebProxy fixes this: the `pot-provider` service mints tokens and the proxy swaps one into the page's own stream requests (`POT_URL`). Nothing else about the request is changed, and if the provider is down the request is sent unchanged.
+
+Check it at startup: `docker compose logs webproxy | grep POT` should show `self-test OK`. For YouTube's verdict on each stream request set `LOG_STATUS=true` and `LOG_STATUS_MATCH=googlevideo`; `sps=OK` is good, `PENDING`/`REJECTED` means YouTube still distrusts the token.
+
+Do not publish the provider's port (4416); it is unauthenticated.
 
 ## Notes
 
