@@ -29,7 +29,8 @@ The container refuses to start unless you pick one:
 | `RH_PASSWORD` | none | Require a password |
 | `PUBLIC_PORT` | `8080` | Port the browser uses (host side of the main port mapping) |
 | `PUBLIC_CROSS_PORT` | `8081` | Port the browser uses for the cross-domain port |
-| `PUBLIC_PROTOCOL` | `http:` | `https:` behind a TLS reverse proxy |
+| `PUBLIC_PROTOCOL` | `http:` | `https:` when a TLS reverse proxy is in front. Ignored (always `https:`) when `TLS_ENABLED` is on |
+| `RH_WORKERS` | one per CPU | Worker processes. `0` or `1` = single process. Forced to single process when `TLS_ENABLED` is on |
 | `TRUST_PROXY` | off | Use `X-Forwarded-For` for the client IP (behind Caddy/nginx) |
 | `RH_DISABLE_IP_LOCK` | off | Allow a session to be used from another IP |
 | `QUICK_LINKS` | Google, DuckDuckGo, YouTube, Facebook | Landing-page buttons as `Name=url` pairs separated by commas or new lines (no commas inside a URL). A bare domain gets `https://`; write `http://...` for plain-HTTP sites. `""` hides them |
@@ -60,6 +61,8 @@ On start the container creates a local CA and a server certificate for `TLS_SAN`
 - Chromium/Chrome: Settings, Privacy and security, Security, Manage certificates, Authorities, Import.
 - Firefox: Settings, Privacy & Security, View Certificates, Authorities, Import.
 - Android: Settings, Security, Encryption & credentials, Install a certificate, CA certificate.
+
+With built-in TLS the proxy runs as a single process, because Rammerhead's worker load balancer has to read plaintext HTTP to route requests and cannot sit in front of TLS. That is fine for a handful of users. To keep workers, terminate TLS in a reverse proxy instead and leave `TLS_ENABLED` off.
 
 Keep the `certs` volume private: `ca.key` can mint certificates that every device trusting the CA will accept.
 
