@@ -3,34 +3,24 @@ services:
     image: ghcr.io/mmbesar/webproxy:latest
     container_name: webproxy
     restart: unless-stopped
-    depends_on:
-      - pot-provider
     environment:
-      # Home-network mode: no password, no session screens.
+      # --- Web proxy page (URL box). No password, for a trusted home network.
       RH_ALLOW_OPEN: "true"
-      # Ports the BROWSER uses (must equal the host side of "ports:" below):
       PUBLIC_PORT: 8080
       PUBLIC_CROSS_PORT: 8081
-      # YouTube fix: mints PO tokens through the pot-provider service below.
-      POT_URL: http://pot-provider:4416
-      # Quick-link buttons on the landing page (Name=url, comma or new-line separated).
+      # --- Forward proxy: point a device's own browser at SERVER_IP:3128 (best for YouTube & heavy sites).
+      FORWARD_PROXY_PORT: 3128
+      # FORWARD_ALLOW: "192.168.1.0/24"      # who may use it (default: all private networks)
+      # FORWARD_AUTH: "user:password"        # optional login
+      # FORWARD_LOG: "true"                  # log every site opened through it
       # QUICK_LINKS: "Google=https://www.google.com, DuckDuckGo=https://duckduckgo.com, YouTube=https://www.youtube.com, Facebook=https://www.facebook.com"
-      # Debugging only: shows YouTube's verdict per stream request (sps=OK / PENDING / REJECTED)
-      # LOG_STATUS: "true"
-      # LOG_STATUS_MATCH: "googlevideo"
     ports:
       - "8080:8080"
       - "8081:8081"
+      - "3128:3128"
     volumes:
       - sessions:/app/sessions
       - cache-js:/app/cache-js
-
-  # Mints the tokens YouTube demands (BotGuard). Never publish its port: it has no authentication.
-  pot-provider:
-    image: brainicism/bgutil-ytdlp-pot-provider:2.0.2
-    container_name: pot-provider
-    restart: unless-stopped
-    init: true
 
 volumes:
   sessions:
